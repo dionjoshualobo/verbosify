@@ -1,7 +1,24 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { GEMINI_API_KEY } from '$env/static/private';
+import { GEMINI_API_KEY, GEMINI_MODEL } from '$env/static/private';
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+
+const MAX_RETRIES = 1;
+const DEFAULT_RETRY_AFTER_SECONDS = 60;
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const parseRetryAfterSeconds = (message: string): number | null => {
+	const match = message.match(/retry in\s+([\d.]+)\s*s/i);
+	if (!match) return null;
+	const seconds = Number.parseFloat(match[1]);
+	return Number.isFinite(seconds) ? Math.ceil(seconds) : null;
+};
+
+const isRateLimitError = (message: string) =>
+	/\b429\b|rate limit|too many requests/i.test(message);
+
+const isQuotaError = (message: string) => /quota.*exceeded/i.test(message);
 
 const PERSONALITY_STYLES: Record<string, { name: string; style: string }> = {
 	bard: {
@@ -98,7 +115,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 		const model = genAI.getGenerativeModel({
-			model: 'gemini-2.5-flash',
+			model: GEMINI_MODEL ?? 'models/gemini-flash-lite-latest',
 			generationConfig: {
 				temperature: 0.9,
 				maxOutputTokens: 2048
@@ -106,12 +123,51 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 
 		const prompt = buildPrompt(input.trim(), verbosity, personality, smartPoeticMode);
-		const result = await model.generateContent(prompt);
+		const result = await (async () => {
+			let attempt = 0;
+			while (true) {
+				try {
+					return await model.generateContent(prompt);
+				} catch (err) {
+					const message = err instanceof Error ? err.message : 'Gemini API error';
+					if (isQuotaError(message)) {
+						throw err;
+					}
+					if (!isRateLimitError(message) || attempt >= MAX_RETRIES) {
+						throw err;
+					}
+
+					const retryAfter =
+						parseRetryAfterSeconds(message) ?? DEFAULT_RETRY_AFTER_SECONDS;
+					const backoffMs = Math.min(Math.max(retryAfter, 1), 10) * 1000;
+					attempt += 1;
+					await delay(backoffMs);
+				}
+			}
+		})();
 
 		return json({ output: result.response.text() });
 	} catch (e) {
 		const message = e instanceof Error ? e.message : 'Gemini API error';
 		console.error('[/api/verbosify]', message);
+
+		if (isQuotaError(message) || isRateLimitError(message)) {
+			const retryAfter =
+				parseRetryAfterSeconds(message) ?? DEFAULT_RETRY_AFTER_SECONDS;
+			return json(
+				{
+					error: 'Gemini rate limit or quota exceeded. Please retry later.',
+					retryAfterSeconds: retryAfter
+				},
+				{
+					status: 429,
+					headers: {
+						'Retry-After': String(retryAfter)
+					}
+				}
+			);
+		}
+
 		return error(500, message);
 	}
 };

@@ -29,6 +29,29 @@ npm run dev
 npm run dev -- --open
 ```
 
+## Environment
+
+This app requires a Gemini API key:
+
+- `GEMINI_API_KEY`: Google Generative AI API key for the `/api/verbosify` route.
+- `GEMINI_MODEL` (optional): Override the model name (default: `models/gemini-flash-lite-latest`).
+
+If the API is rate-limited or the quota is exceeded, the server responds with HTTP `429` and a `Retry-After` header to indicate when to retry.
+
+### List available models (curl)
+
+Use your API key to list accessible models and pick a free-tier one:
+
+```sh
+curl -s "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMINI_API_KEY" | jq -r '.models[].name'
+```
+
+If you don’t have `jq`, you can view the raw JSON:
+
+```sh
+curl -s "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMINI_API_KEY"
+```
+
 ## Building
 
 To create a production version of your app:
