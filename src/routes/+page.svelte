@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { theme } from '$lib/theme.svelte';
+	import { personalities, type Personality } from '$lib/personalities';
 	import { fade, slide } from 'svelte/transition';
-	import { Sparkles, MessageSquare, History, Wand2 } from '@lucide/svelte';
+	import { Sparkles, MessageSquare, History, Wand2, Eye } from '@lucide/svelte';
 
 	let input = $state('');
 	let output = $state('');
@@ -9,38 +10,15 @@
 	let verbosity = $state(50);
 	let smartPoeticMode = $state(true);
 
-	const personalities = [
-		{
-			id: 'bard',
-			name: 'The Bard',
-			description: 'Shakespearian eloquence',
-			icon: Sparkles,
-			color: '#cc99ff'
-		},
-		{
-			id: 'orator',
-			name: 'The Orator',
-			description: 'Tharoorian grandiosity',
-			icon: MessageSquare,
-			color: '#5566ff'
-		},
-		{
-			id: 'explorer',
-			name: 'The Explorer',
-			description: 'Victorian expeditionary',
-			icon: History,
-			color: '#cc4444'
-		},
-		{
-			id: 'bot',
-			name: 'The Automaton',
-			description: 'Technical sesquipedalian',
-			icon: Wand2,
-			color: '#ffcc00'
-		}
-	];
+	const iconsById: Record<string, typeof Sparkles> = {
+		bard: Sparkles,
+		orator: MessageSquare,
+		explorer: History,
+		bot: Wand2,
+		sartre: Eye
+	};
 
-	let selectedPersonality = $state(personalities[0]);
+	let selectedPersonality = $state<Personality>(personalities[0]);
 
 	// Radial Dial — full 360° cyclical
 	let dialContainer: HTMLDivElement | undefined = $state();
@@ -74,15 +52,44 @@
 		isDraggingDial = false;
 	}
 
+	let error = $state('');
+	let copied = $state(false);
+
+	function copyOutput() {
+		navigator.clipboard.writeText(output);
+		copied = true;
+		setTimeout(() => (copied = false), 2000);
+	}
+
 	async function handleVerbosify() {
 		if (!input) return;
 		isVerbosing = true;
+		error = '';
 
-		// Mock logic for now
-		setTimeout(() => {
-			output = `[${selectedPersonality.name} verbosity ${verbosity}%]: The input "${input}" has been meticulously expanded into a more sophisticated and elaborate linguistic structure.`;
+		try {
+			const res = await fetch('/api/verbosify', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					input,
+					verbosity,
+					personality: selectedPersonality.id,
+					smartPoeticMode
+				})
+			});
+
+			if (!res.ok) {
+				const { message } = await res.json();
+				throw new Error(message ?? `HTTP ${res.status}`);
+			}
+
+			const data = await res.json();
+			output = data.output;
+		} catch (e) {
+			error = e instanceof Error ? e.message : 'Something went wrong';
+		} finally {
 			isVerbosing = false;
-		}, 1500);
+		}
 	}
 </script>
 
@@ -158,10 +165,18 @@
 					</button>
 				</div>
 
+				{#if error}
+					<div
+						class="rounded-r-3xl border-l-8 border-red-500 bg-white/5 py-6 pl-8 font-bold text-red-400"
+					>
+						ERROR: {error}
+					</div>
+				{/if}
+
 				{#if output || isVerbosing}
 					<div
 						in:slide
-						class="rounded-r-3xl border-l-8 bg-white/5 py-6 pl-8"
+						class="rounded-r-3xl border-l-8 bg-white/5 py-6 pr-6 pl-8"
 						style="border-color: var(--current-accent)"
 					>
 						{#if isVerbosing}
@@ -173,12 +188,23 @@
 								SYNTHESIZING...
 							</div>
 						{:else}
-							<p
-								class="font-mono text-2xl leading-relaxed"
-								style="color: {selectedPersonality.color}"
-							>
-								{output}
-							</p>
+							<div class="mb-3 flex justify-end">
+								<button
+									onclick={copyOutput}
+									class="px-3 py-1 text-xs font-bold tracking-widest uppercase transition-all"
+									style="color: {selectedPersonality.color}; border: 1px solid {selectedPersonality.color}66"
+								>
+									{copied ? 'COPIED' : 'COPY'}
+								</button>
+							</div>
+							<div class="max-h-56 overflow-y-auto">
+								<p
+									class="font-mono text-xl leading-relaxed"
+									style="color: {selectedPersonality.color}"
+								>
+									{output}
+								</p>
+							</div>
 						{/if}
 					</div>
 				{/if}
@@ -200,6 +226,7 @@
 				</h2>
 				<div class="grid grid-cols-1 gap-2">
 					{#each personalities as p}
+						{@const Icon = iconsById[p.id]}
 						<button
 							onclick={() => (selectedPersonality = p)}
 							class="group relative overflow-hidden border-2 p-3 text-left transition-all duration-300 {selectedPersonality.id ===
@@ -209,15 +236,12 @@
 							style="border-radius: var(--theme-radius);"
 						>
 							<div class="relative z-10 flex items-center gap-3">
-								<p.icon
+								<Icon
 									class="h-5 w-5 {selectedPersonality.id === p.id
 										? 'text-accent-color'
 										: 'opacity-50'}"
 								/>
-								<div>
-									<h3 class="text-sm font-bold tracking-wide uppercase">{p.name}</h3>
-									<p class="text-[10px] tracking-tighter uppercase opacity-60">{p.description}</p>
-								</div>
+								<h3 class="text-sm font-bold tracking-wide uppercase">{p.name}</h3>
 							</div>
 							{#if selectedPersonality.id === p.id}
 								<div class="bg-accent-color/5 absolute inset-0" in:fade></div>
@@ -307,10 +331,19 @@
 				</button>
 			</div>
 
+			{#if error}
+				<div
+					class="border-2 border-red-500/40 bg-red-500/10 p-4 text-sm text-red-400"
+					style="border-radius: var(--theme-radius);"
+				>
+					{error}
+				</div>
+			{/if}
+
 			{#if output || isVerbosing}
 				<div
 					in:slide={{ axis: 'y' }}
-					class="border-accent-color/30 bg-accent-color/5 relative overflow-hidden border-2 p-8"
+					class="border-accent-color/30 bg-accent-color/5 relative overflow-hidden border-2 p-6"
 					style="border-radius: var(--theme-radius);"
 				>
 					{#if isVerbosing}
@@ -323,11 +356,22 @@
 							>
 						</div>
 					{:else}
-						<p
-							class="font-serif text-xl leading-relaxed first-letter:mr-2 first-letter:text-4xl first-letter:font-bold"
-						>
-							{output}
-						</p>
+						<div class="mb-3 flex justify-end">
+							<button
+								onclick={copyOutput}
+								class="text-accent-color border-accent-color/40 border px-3 py-1 text-xs font-bold tracking-widest uppercase transition-all hover:bg-white/5"
+								style="border-radius: var(--theme-radius);"
+							>
+								{copied ? 'Copied!' : 'Copy'}
+							</button>
+						</div>
+						<div class="max-h-56 overflow-y-auto">
+							<p
+								class="font-serif text-xl leading-relaxed first-letter:mr-2 first-letter:text-4xl first-letter:font-bold"
+							>
+								{output}
+							</p>
+						</div>
 					{/if}
 
 					<div
