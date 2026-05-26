@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { GEMINI_API_KEY, GEMINI_MODEL } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
@@ -113,9 +113,14 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	try {
-		const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+		const apiKey = env.GEMINI_API_KEY;
+		if (!apiKey) {
+			return error(500, 'GEMINI_API_KEY is not set');
+		}
+
+		const genAI = new GoogleGenerativeAI(apiKey);
 		const model = genAI.getGenerativeModel({
-			model: GEMINI_MODEL ?? 'models/gemini-flash-lite-latest',
+			model: env.GEMINI_MODEL ?? 'models/gemini-flash-lite-latest',
 			generationConfig: {
 				temperature: 0.9,
 				maxOutputTokens: 2048

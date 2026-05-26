@@ -63,3 +63,21 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+## Deploying to Cloudflare Pages
+
+This project uses the Cloudflare adapter, so Pages is a good fit (server routes run as Pages Functions).
+
+1. Push the repo to GitHub.
+2. In Cloudflare Pages, create a new project from the repo.
+3. Set build settings:
+
+	- Build command: `npm run build`
+	- Build output directory: `.svelte-kit/cloudflare`
+
+4. Add environment variables in Pages settings:
+
+	- `GEMINI_API_KEY`
+	- `GEMINI_MODEL` (optional)
+
+5. Deploy.

@@ -10,9 +10,4 @@ declare global {
 	}
 }
 
-declare module '$env/static/private' {
-	export const GEMINI_API_KEY: string;
-	export const GEMINI_MODEL: string | undefined;
-}
-
 export {};
