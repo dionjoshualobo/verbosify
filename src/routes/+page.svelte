@@ -99,9 +99,9 @@
 					class="lcars-pill transition-all"
 					class:lcars-pill-active={selectedPersonality.id === p.id}
 					data-number={(i + 1).toString().padStart(2, '0')}
-					style="background-color: {selectedPersonality.id === p.id
-						? 'var(--lcars-gold)'
-						: p.color}; filter: {selectedPersonality.id === p.id ? 'none' : 'brightness(0.7)'}"
+					style="background-color: {p.color}; filter: {selectedPersonality.id === p.id
+						? 'none'
+						: 'brightness(0.6)'}"
 				>
 					{p.name}
 				</button>
@@ -121,8 +121,8 @@
 					<div class="lcars-dial-bg" style="border-color: {selectedPersonality.color}99"></div>
 					<div
 						class="lcars-dial-indicator"
-						style="transform: rotate({(verbosity / 100) * 270 -
-							45}deg); background-color: {selectedPersonality.color}"
+						style="transform: rotate({(verbosity / 100) * 360 -
+							90}deg); background-color: {selectedPersonality.color}"
 					></div>
 					<div class="lcars-dial-value" style="color: {selectedPersonality.color}">
 						{verbosity}%
@@ -188,18 +188,21 @@
 		<div class="lcars-footer-pill" style="background-color: var(--current-accent)"></div>
 	</div>
 {:else}
-	<div class="mx-auto grid max-w-6xl grid-cols-1 gap-8 pb-12 lg:grid-cols-4" in:fade>
+	<div
+		class="mx-auto grid h-full max-w-6xl grid-cols-1 gap-6 overflow-hidden lg:grid-cols-4"
+		in:fade
+	>
 		<!-- Victorian Sidebar -->
-		<aside class="order-2 space-y-8 lg:order-1 lg:col-span-1">
-			<div class="space-y-4">
+		<aside class="order-2 flex h-full flex-col gap-4 overflow-y-auto pb-4 lg:order-1 lg:col-span-1">
+			<div class="space-y-3">
 				<h2 class="text-accent-color text-xs font-bold tracking-[0.3em] uppercase opacity-70">
 					Select Personality
 				</h2>
-				<div class="grid grid-cols-1 gap-3">
+				<div class="grid grid-cols-1 gap-2">
 					{#each personalities as p}
 						<button
 							onclick={() => (selectedPersonality = p)}
-							class="group relative overflow-hidden border-2 p-4 text-left transition-all duration-300 {selectedPersonality.id ===
+							class="group relative overflow-hidden border-2 p-3 text-left transition-all duration-300 {selectedPersonality.id ===
 							p.id
 								? 'border-accent-color'
 								: 'border-white/10'}"
@@ -225,7 +228,7 @@
 			</div>
 
 			<div
-				class="space-y-6 border-2 border-white/10 bg-white/5 p-6"
+				class="space-y-4 border-2 border-white/10 bg-white/5 p-4"
 				style="border-radius: var(--theme-radius);"
 			>
 				<h2 class="text-accent-color text-xs font-bold tracking-[0.3em] uppercase opacity-70">
@@ -238,6 +241,15 @@
 						max="100"
 						bind:value={verbosity}
 						class="accent-accent-color h-1 w-full cursor-pointer appearance-none rounded-lg bg-white/10"
+						onkeydown={(e) => {
+							if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+								e.preventDefault();
+								verbosity = verbosity >= 100 ? 0 : verbosity + 1;
+							} else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+								e.preventDefault();
+								verbosity = verbosity <= 0 ? 100 : verbosity - 1;
+							}
+						}}
 					/>
 					<div
 						class="mt-4 flex justify-between text-[10px] font-bold tracking-widest uppercase opacity-60"
@@ -250,7 +262,7 @@
 			</div>
 
 			<div
-				class="space-y-4 border-2 border-white/10 bg-white/5 p-6"
+				class="space-y-3 border-2 border-white/10 bg-white/5 p-4"
 				style="border-radius: var(--theme-radius);"
 			>
 				<div class="flex items-center justify-between">
@@ -261,12 +273,12 @@
 						onclick={() => (smartPoeticMode = !smartPoeticMode)}
 						class="relative h-6 w-12 rounded-full transition-colors duration-300 {smartPoeticMode
 							? 'bg-accent-color'
-							: 'bg-white/10'}"
+							: 'bg-white/20'}"
 					>
 						<div
-							class="bg-bg-color absolute top-1 left-1 h-4 w-4 rounded-full transition-transform duration-300 {smartPoeticMode
-								? 'translate-x-6'
-								: 'translate-x-0'}"
+							class="absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform duration-300 {smartPoeticMode
+								? 'translate-x-6 opacity-90'
+								: 'opacity-60'}"
 						></div>
 					</button>
 				</div>
@@ -277,12 +289,12 @@
 		</aside>
 
 		<!-- Victorian Main Area -->
-		<div class="order-1 space-y-6 lg:order-2 lg:col-span-3">
+		<div class="order-1 flex h-full flex-col gap-4 overflow-y-auto pb-4 lg:order-2 lg:col-span-3">
 			<div class="group relative">
 				<textarea
 					bind:value={input}
 					placeholder="Enter text to verbosify..."
-					class="focus:border-accent-color/50 h-64 w-full resize-none border-2 border-white/10 bg-white/5 p-6 text-lg transition-all duration-500 placeholder:opacity-30"
+					class="focus:border-accent-color/50 h-48 w-full resize-none border-2 border-white/10 bg-white/5 p-5 text-lg transition-all duration-500 placeholder:opacity-30"
 					style="border-radius: var(--theme-radius); font-family: var(--font-mono);"
 				></textarea>
 				<button

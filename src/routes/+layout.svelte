@@ -9,14 +9,8 @@
 	});
 </script>
 
-<div
-	class="relative min-h-screen transition-all duration-500"
-	class:bg-linear-to-b={theme.current === 'victorian'}
-	class:from-transparent={theme.current === 'victorian'}
-	class:to-[var(--secondary-color)]={theme.current === 'victorian'}
-	class:bg-black={theme.current === 'lcars'}
->
-	<header class="absolute top-0 left-0 z-10 flex w-full items-center justify-between p-6">
+<div class="app-root">
+	<header class="absolute top-0 left-0 z-10 flex w-full items-center justify-between px-6 py-4">
 		<h1
 			class="text-accent-color text-3xl font-bold tracking-[0.2em] uppercase"
 			class:font-serif={theme.current === 'victorian'}
@@ -31,7 +25,7 @@
 		</button>
 	</header>
 
-	<main class="min-h-screen px-4 pt-28 md:px-8">
+	<main class="main-content">
 		{@render children()}
 	</main>
 </div>
