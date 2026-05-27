@@ -199,7 +199,7 @@
 							</div>
 							<div class="themed-scrollbar output-scroll overflow-y-auto">
 								<p
-									class="m-0 font-mono text-xl leading-relaxed whitespace-pre-wrap break-words"
+									class="m-0 font-mono text-xl leading-relaxed whitespace-pre-wrap"
 									style="color: {selectedPersonality.color}"
 								>
 									{output}
@@ -371,7 +371,7 @@
 						</div>
 						<div class="themed-scrollbar output-scroll overflow-y-auto">
 							<p
-								class="m-0 font-serif text-xl leading-relaxed whitespace-pre-wrap break-words first-letter:mr-2 first-letter:text-4xl first-letter:font-bold"
+								class="m-0 font-serif text-xl leading-relaxed whitespace-pre-wrap first-letter:mr-2 first-letter:text-4xl first-letter:font-bold"
 							>
 								{output}
 							</p>
