@@ -99,7 +99,7 @@
 			VERBOSIFY // PERSONNEL ACCESS
 		</div>
 
-		<div class="lcars-sidebar">
+		<div class="lcars-sidebar themed-scrollbar">
 			{#each personalities as p, i}
 				<button
 					onclick={() => (selectedPersonality = p)}
@@ -114,7 +114,7 @@
 				</button>
 			{/each}
 
-			<div class="mt-auto space-y-4 pb-8">
+			<div class="lcars-controls mt-auto space-y-4 pb-8">
 				<div class="text-lcars-blue mb-2 text-center text-xs font-bold tracking-[0.2em]">
 					VERBOSITY LEVEL
 				</div>
@@ -146,7 +146,7 @@
 			</div>
 		</div>
 
-		<div class="lcars-content-area" style="border-color: var(--current-accent)">
+		<div class="lcars-content-area themed-scrollbar" style="border-color: var(--current-accent)">
 			<div class="space-y-8">
 				<div class="relative">
 					<textarea
@@ -197,9 +197,9 @@
 									{copied ? 'COPIED' : 'COPY'}
 								</button>
 							</div>
-							<div class="max-h-56 overflow-y-auto">
+							<div class="themed-scrollbar output-scroll overflow-y-auto">
 								<p
-									class="font-mono text-xl leading-relaxed"
+									class="m-0 font-mono text-xl leading-relaxed whitespace-pre-wrap"
 									style="color: {selectedPersonality.color}"
 								>
 									{output}
@@ -215,11 +215,13 @@
 	</div>
 {:else}
 	<div
-		class="mx-auto grid h-full max-w-6xl grid-cols-1 gap-6 overflow-hidden lg:grid-cols-4"
+		class="mx-auto grid h-full min-h-0 max-w-6xl grid-cols-1 gap-6 overflow-hidden lg:grid-cols-4"
 		in:fade
 	>
 		<!-- Victorian Sidebar -->
-		<aside class="order-2 flex h-full flex-col gap-4 overflow-y-auto pb-4 lg:order-1 lg:col-span-1">
+		<aside
+			class="themed-scrollbar order-2 flex h-full min-h-0 flex-col gap-4 overflow-y-auto pb-4 lg:order-1 lg:col-span-1"
+		>
 			<div class="space-y-3">
 				<h2 class="text-accent-color text-xs font-bold tracking-[0.3em] uppercase opacity-70">
 					Select Personality
@@ -313,7 +315,9 @@
 		</aside>
 
 		<!-- Victorian Main Area -->
-		<div class="order-1 flex h-full flex-col gap-4 overflow-y-auto pb-4 lg:order-2 lg:col-span-3">
+		<div
+			class="themed-scrollbar order-1 flex h-full min-h-0 flex-col gap-4 overflow-y-auto pb-4 lg:order-2 lg:col-span-3"
+		>
 			<div class="group relative">
 				<textarea
 					bind:value={input}
@@ -365,9 +369,9 @@
 								{copied ? 'Copied!' : 'Copy'}
 							</button>
 						</div>
-						<div class="max-h-56 overflow-y-auto">
+						<div class="themed-scrollbar output-scroll overflow-y-auto">
 							<p
-								class="font-serif text-xl leading-relaxed first-letter:mr-2 first-letter:text-4xl first-letter:font-bold"
+								class="m-0 font-serif text-xl leading-relaxed whitespace-pre-wrap first-letter:mr-2 first-letter:text-4xl first-letter:font-bold"
 							>
 								{output}
 							</p>
@@ -403,18 +407,6 @@
 	}
 	.animation-delay-400 {
 		animation-delay: 400ms;
-	}
-
-	/* Customscrollbar for LCARS */
-	::-webkit-scrollbar {
-		width: 15px;
-	}
-	::-webkit-scrollbar-track {
-		background: black;
-	}
-	::-webkit-scrollbar-thumb {
-		background: var(--lcars-blue);
-		border-radius: 10px;
 	}
 
 	.lcars-dial-container {
