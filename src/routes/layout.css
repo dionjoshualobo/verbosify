@@ -1,350 +1,835 @@
 @import 'tailwindcss';
 
 @theme {
-	--font-serif: 'Libre Baskerville', serif;
-	--font-mono: 'Fira Code', monospace;
+	--font-serif: 'Libre Baskerville', Georgia, 'Times New Roman', serif;
+	--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+	--font-mono: 'Fira Code', ui-monospace, 'SF Mono', monospace;
 
 	/* Theme-able colors */
-	--bg-color: var(--theme-bg);
-	--text-color: var(--theme-text);
-	--accent-color: var(--theme-accent);
-	--secondary-color: var(--theme-secondary);
-	--border-radius: var(--theme-radius);
+	--color-bg: var(--theme-bg);
+	--color-text: var(--theme-text);
+	--color-accent: var(--theme-accent);
+	--color-secondary: var(--theme-secondary);
 }
 
-:root {
-	/* Victorian (Default) */
-	--theme-bg: #121212;
-	--theme-text: #e0e0e0;
+/* ============================================================
+   THEME TOKENS
+   One source of truth. Both themes restyle the SAME markup.
+   ============================================================ */
+:root[data-theme='victorian'] {
+	--theme-bg: #0e0e12;
+	--theme-text: #e8e4da;
 	--theme-accent: #d4af37;
-	--theme-secondary: #2a2a2a;
-	--theme-radius: 0.5rem;
+	--theme-secondary: #1d1d24;
+	--theme-radius: 0.75rem;
 
-	--glass-bg: rgba(255, 255, 255, 0.05);
-	--glass-border: rgba(212, 175, 55, 0.3);
-	--scrollbar-track: rgba(255, 255, 255, 0.08);
-	--scrollbar-thumb: rgba(212, 175, 55, 0.7);
-	--scrollbar-thumb-hover: rgba(212, 175, 55, 0.95);
+	--panel-bg: rgba(255, 255, 255, 0.04);
+	--panel-border: rgba(255, 255, 255, 0.09);
+
+	--input-bg: rgba(0, 0, 0, 0.35);
+	--chip-bg: rgba(255, 255, 255, 0.04);
+
+	--text-muted: rgba(234, 229, 216, 0.45);
+	--danger: #c96a5a;
+
+	--glow: 0 0 22px rgba(212, 175, 55, 0.18);
+	--font-display: var(--font-serif);
+
+	--scrollbar-track: rgba(255, 255, 255, 0.05);
+	--scrollbar-thumb: rgba(212, 175, 55, 0.5);
+	--scrollbar-thumb-hover: rgba(212, 175, 55, 0.85);
 }
 
-[data-theme='lcars'] {
-	/* LCARS Authentic Palette */
+:root[data-theme='lcars'] {
 	--theme-bg: #000000;
-	--theme-text: #ffffff;
-	--theme-accent: #ff9966;
-	/* Orange */
-	--theme-secondary: #ffcc00;
-	/* Gold */
+	--theme-text: #f2f5ff;
+	--theme-accent: #ff9f2e;
+	--theme-secondary: #101828;
 	--theme-radius: 2rem;
+
+	--panel-bg: rgba(16, 24, 40, 0.45);
+	--panel-border: rgba(85, 102, 255, 0.5);
+
+	--input-bg: rgba(0, 0, 0, 0.55);
+	--chip-bg: rgba(0, 0, 0, 0.6);
+
+	--text-muted: rgba(226, 232, 255, 0.5);
+	--danger: #ff5a5a;
 
 	--lcars-orange: #ff9900;
 	--lcars-gold: #ffcc00;
 	--lcars-blue: #5566ff;
 	--lcars-peach: #ffcc99;
-	--lcars-violet: #cc99ff;
+	--lcars-violet: #cb9cff;
 	--lcars-red: #cc4444;
-	--scrollbar-track: #101018;
+
+	--glow-alpha: 0.35;
+	--font-display: var(--font-mono);
+
+	--scrollbar-track: #0b0f1e;
 	--scrollbar-thumb: #5566ff;
-	--scrollbar-thumb-hover: #8390ff;
+	--scrollbar-thumb-hover: #ff9f2e;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	height: 100%;
 }
 
 body {
-	background-color: var(--bg-color);
-	color: var(--text-color);
-	font-family: var(--font-mono);
-	transition: color 0.5s ease-in-out;
-	height: 100vh;
-	overflow: hidden;
+	margin: 0;
+	background: var(--theme-bg);
+	color: var(--theme-text);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+	transition: background 0.4s ease;
 }
 
-/* App root — background handled here so there's no JS-driven class flash on theme switch */
+:focus-visible {
+	outline: 2px solid var(--theme-accent);
+	outline-offset: 2px;
+}
+
+/* ============================================================
+   APP FRAME
+   ============================================================ */
 .app-root {
+	min-height: 100dvh;
 	position: relative;
-	height: 100vh;
-	overflow: hidden;
-	background: #000000;
-	transition: background 0.5s ease-in-out;
-}
-
-[data-theme='victorian'] .app-root {
-	background: linear-gradient(to bottom, #121212 30%, #2a2a2a);
-}
-
-/* Main content area — sits under the absolute header, no page scroll */
-.main-content {
-	height: 100vh;
-	box-sizing: border-box;
-	padding: 68px 1rem 0;
-	overflow: hidden;
+	background: var(--theme-bg);
 	display: flex;
 	flex-direction: column;
+}
+
+/* Lcars wakes the LCARS "frame" — full-bleed corner bars. */
+[data-theme='lcars'] .app-root::before,
+[data-theme='lcars'] .app-root::after {
+	content: '';
+	position: fixed;
+	z-index: 5;
+	background: var(--lcars-orange);
+}
+
+[data-theme='lcars'] .app-root::before {
+	top: 0;
+	left: 0;
+	height: 6px;
+	width: 100%;
+}
+
+[data-theme='lcars'] .app-root::after {
+	bottom: 0;
+	right: 0;
+	height: 6px;
+	width: 100%;
+}
+
+.main-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	max-width: 1100px;
+	margin: 0 auto;
+	padding: 1rem 1rem 3rem;
 }
 
 @media (min-width: 768px) {
 	.main-content {
-		padding-left: 2rem;
-		padding-right: 2rem;
+		padding: 1.5rem 1.5rem 4rem;
 	}
 }
 
-/* LCARS Structural Primitives */
-[data-theme='lcars'] .lcars-frame {
-	display: grid;
-	grid-template-columns: 200px 1fr;
-	grid-template-rows: auto 1fr auto;
-	gap: 15px;
-	height: 100%;
-	padding-bottom: 15px;
-}
-
-[data-theme='lcars'] .lcars-header-pill {
-	background-color: var(--lcars-orange);
-	border-radius: 40px 0 0 40px;
-	height: 80px;
-	display: flex;
-	align-items: center;
-	padding-left: 40px;
-	font-weight: bold;
-	font-size: 2rem;
-	color: black;
-	grid-column: 1 / 3;
-}
-
-[data-theme='lcars'] .lcars-sidebar {
-	grid-column: 1 / 2;
-	grid-row: 2 / 3;
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	padding-top: 60px;
-	/* Align with the start of the content area curve */
-}
-
-[data-theme='lcars'] .lcars-pill {
-	height: 45px;
-	border-radius: 0 22px 22px 0;
+/* ============================================================
+   HEADER
+   ============================================================ */
+.app-header {
+	position: sticky;
+	top: 0;
+	z-index: 20;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding-left: 15px;
-	padding-right: 20px;
-	color: black;
-	font-weight: bold;
-	font-size: 0.85rem;
+	gap: 1rem;
+	padding: 0.9rem 1rem;
+	background: color-mix(in srgb, var(--theme-bg) 82%, transparent);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border-bottom: 1px solid var(--panel-border);
+}
+
+.app-header__inner {
+	width: 100%;
+	max-width: 1100px;
+	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.app-brand {
+	margin: 0;
+	font-family: var(--font-display);
+	font-size: 1.35rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
 	text-transform: uppercase;
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	color: var(--theme-accent);
+	white-space: nowrap;
+}
+
+.header-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+/* Lcars header — pill-shaped blocks on the right rail. */
+[data-theme='lcars'] .app-header {
+	border-bottom: 2px solid var(--lcars-blue);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
 	cursor: pointer;
+	border-radius: var(--theme-radius);
+	font-family: var(--font-sans);
+	font-weight: 600;
+	transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+		transform 0.1s ease;
+	border: 2px solid transparent;
+	text-decoration: none;
+}
+
+.btn:active {
+	transform: translateY(1px);
+}
+
+.btn:disabled {
+	cursor: not-allowed;
+	opacity: 0.45;
+}
+
+.btn-primary {
+	background: var(--theme-accent);
+	color: #0a0a0a;
+	border-color: var(--theme-accent);
+	padding: 0.8rem 1.75rem;
+	font-size: 0.95rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+}
+
+.btn-primary:hover:not(:disabled) {
+	filter: brightness(1.08);
+	box-shadow: var(--glow-alpha) 0 0 24px;
+}
+
+.btn-ghost {
+	background: transparent;
+	color: var(--theme-text);
+	border-color: var(--panel-border);
+	padding: 0.5rem 0.9rem;
+	font-size: 0.8rem;
+}
+
+.btn-ghost:hover:not(:disabled) {
+	border-color: var(--theme-accent);
+}
+
+.btn-icon {
+	background: transparent;
+	color: var(--text-muted);
 	border: none;
-	width: 100%;
+	width: 2.25rem;
+	height: 2.25rem;
+	border-radius: 999px;
+	padding: 0;
 }
 
-[data-theme='lcars'] .lcars-pill::before {
-	content: attr(data-number);
-	font-size: 0.65rem;
-	opacity: 0.7;
-	margin-right: 10px;
-}
-
-[data-theme='lcars'] .lcars-pill-active {
-	width: 115%;
-
-	font-size: 1rem;
-	box-shadow: 10px 0 0 var(--lcars-orange);
-}
-
-[data-theme='lcars'] .lcars-content-area {
-	grid-column: 2 / 3;
-	grid-row: 2 / 3;
-	background-color: black;
-	border-top: 20px solid var(--lcars-violet);
-	border-left: 20px solid var(--lcars-violet);
-	border-radius: 60px 0 0 0;
-	padding: 40px;
-	overflow-y: auto;
-}
-
-[data-theme='lcars'] .lcars-footer-pill {
-	background-color: var(--lcars-orange);
-	border-radius: 0 0 0 40px;
-	height: 40px;
-	grid-column: 1 / 3;
-}
-
-[data-theme='lcars'] .lcars-input-pill {
-	background: black;
-	border: 3px solid var(--lcars-blue);
+/* Lcars buttons get squared pill corners. */
+[data-theme='lcars'] .btn {
 	border-radius: 30px;
-	color: white;
-	padding: 20px;
-	width: 100%;
 	font-family: var(--font-mono);
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	font-size: 0.85rem;
 }
 
-[data-theme='lcars'] .lcars-dial-container {
+[data-theme='lcars'] .btn-primary {
+	background: var(--lcars-orange);
+	color: #000;
+	border-color: var(--lcars-orange);
+}
+
+[data-theme='lcars'] .btn-ghost {
+	color: var(--lcars-gold);
+	border-color: var(--lcars-blue);
+	background: rgba(85, 102, 255, 0.12);
+}
+
+/* ============================================================
+   PAGE LAYOUT
+   Controls rail + workspace. Collapses to one column mobile.
+   ============================================================ */
+.verbosify-layout {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1.25rem;
+	flex: 1;
+}
+
+@media (min-width: 900px) {
+	.verbosify-layout {
+		grid-template-columns: minmax(240px, 300px) 1fr;
+		grid-template-rows: auto auto;
+		gap: 1.5rem;
+		align-items: start;
+	}
+
+	.controls-rail {
+		position: sticky;
+		top: 6rem;
+	}
+}
+
+.workspace {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+	min-width: 0;
+}
+
+/* ============================================================
+   CARD / PANEL
+   ============================================================ */
+.panel {
+	background: var(--panel-bg);
+	border: 1px solid var(--panel-border);
+	border-radius: var(--theme-radius);
+	padding: 1.1rem;
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+}
+
+.panel__title {
+	margin: 0 0 0.85rem;
+	font-family: var(--font-display);
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+}
+
+/* ============================================================
+   PERSONALITY PICKER (chips)
+   ============================================================ */
+.personality-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.personality-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	padding: 0.5rem 0.9rem;
+	border-radius: 999px;
+	background: var(--chip-bg);
+	border: 1px solid var(--panel-border);
+	color: var(--theme-text);
+	font-size: 0.85rem;
+	cursor: pointer;
+	transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease,
+		box-shadow 0.2s ease;
+}
+
+.personality-chip:hover {
+	border-color: var(--accent-color);
+	transform: translateY(-1px);
+}
+
+.personality-chip--active {
+	border-color: var(--accent-color);
+	background: color-mix(in srgb, var(--accent-color) 16%, transparent);
+	box-shadow: 0 0 16px color-mix(in srgb, var(--accent-color) 40%, transparent);
+}
+
+.personality-chip svg {
+	width: 0.95rem;
+	height: 0.95rem;
+	color: var(--accent-color);
+}
+
+[data-theme='lcars'] .personality-chip {
+	border-radius: 22px;
+	border: 2px solid transparent;
+	border-left-color: var(--accent-color);
+	background: var(--chip-bg);
+	font-family: var(--font-mono);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	padding: 0.55rem 0.9rem;
+}
+
+[data-theme='lcars'] .personality-chip--active {
+	border-color: var(--accent-color);
+	background: var(--accent-color);
+	color: #000;
+	box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.6), 0 0 0 0;
+}
+
+[data-theme='lcars'] .personality-chip--active svg {
+	color: #000;
+}
+
+/* ============================================================
+   VERBOSITY SLIDER
+   ============================================================ */
+.field {
+	margin-top: 1.25rem;
+}
+
+.field__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.55rem;
+}
+
+.field__label {
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+}
+
+.field__value {
+	font-family: var(--font-display);
+	font-weight: 700;
+	color: var(--theme-accent);
+	font-size: 0.9rem;
+}
+
+.slider {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 6px;
+	border-radius: 999px;
+	background: linear-gradient(
+		to right,
+		var(--theme-accent) var(--slider-fill, 50%),
+		var(--panel-border) var(--slider-fill, 50%)
+	);
+	outline-offset: 4px;
+	cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--theme-accent);
+	border: 3px solid var(--theme-bg);
+	box-shadow: 0 0 14px var(--theme-accent), 0 2px 6px rgba(0, 0, 0, 0.5);
+	cursor: pointer;
+	transition: transform 0.1s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+	transform: scale(1.12);
+}
+
+.slider::-moz-range-thumb {
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--theme-accent);
+	border: 3px solid var(--theme-bg);
+	box-shadow: 0 0 14px var(--theme-accent), 0 2px 6px rgba(0, 0, 0, 0.5);
+	cursor: pointer;
+}
+
+.slider-labels {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 0.4rem;
+	font-size: 0.62rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+}
+
+/* ============================================================
+   SMART POETIC TOGGLE
+   ============================================================ */
+.switch-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	margin-top: 1.25rem;
+}
+
+.switch {
 	position: relative;
-	width: 140px;
-	height: 140px;
-	margin: 20px auto;
+	display: inline-block;
+	width: 44px;
+	height: 26px;
+	flex: none;
+}
+
+.switch input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+	position: absolute;
+}
+
+.switch__track {
+	position: absolute;
+	inset: 0;
+	border-radius: 999px;
+	background: var(--panel-border);
+	cursor: pointer;
+	transition: background 0.2s ease;
+}
+
+.switch__track::before {
+	content: '';
+	position: absolute;
+	height: 20px;
+	width: 20px;
+	left: 3px;
+	top: 3px;
+	border-radius: 50%;
+	background: var(--theme-text);
+	transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.switch input:checked + .switch__track {
+	background: var(--theme-accent);
+}
+
+.switch input:checked + .switch__track::before {
+	transform: translateX(18px);
+	background: #0a0a0a;
+}
+
+.switch-hint {
+	font-size: 0.72rem;
+	line-height: 1.35;
+	color: var(--text-muted);
+}
+
+/* ============================================================
+   INPUT
+   ============================================================ */
+.input-wrap {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.textarea {
+	width: 100%;
+	min-height: 150px;
+	resize: none;
+	padding: 0.9rem 1rem;
+	border-radius: var(--theme-radius);
+	background: var(--input-bg);
+	border: 1px solid var(--panel-border);
+	color: var(--theme-text);
+	font-family: var(--font-display);
+	font-size: 1rem;
+	line-height: 1.6;
+	outline: none;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+	box-sizing: border-box;
+}
+
+.textarea:focus {
+	border-color: var(--theme-accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-accent) 22%, transparent);
+}
+
+.textarea::placeholder {
+	color: var(--text-muted);
+}
+
+.textarea:disabled {
+	opacity: 0.6;
+}
+
+.input-foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+}
+
+.char-count {
+	font-size: 0.68rem;
+	letter-spacing: 0.08em;
+	color: var(--text-muted);
+	font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   OUTPUT CARD
+   ============================================================ */
+.output-card {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	min-height: 240px;
+}
+
+.output-card__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.output-card__meta {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-family: var(--font-display);
+	font-size: 0.72rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+}
+
+.output-card__meta .personality-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: var(--accent-color);
+	box-shadow: 0 0 10px var(--accent-color);
+}
+
+.output {
+	flex: 1;
+	overflow-y: auto;
+	max-height: 55vh;
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
+	padding-right: 0.4rem;
+	padding-bottom: 0.4rem;
+}
+
+.output p {
+	margin: 0;
+	font-family: var(--font-display);
+	font-size: 1.05rem;
+	line-height: 1.7;
+	white-space: pre-wrap;
+}
+
+/* Drop cap only makes sense in the serif Victorian mode. */
+[data-theme='victorian'] .output p::first-letter {
+	font-size: 2.6em;
+	float: left;
+	line-height: 0.85;
+	margin-right: 0.35rem;
+	font-weight: 700;
+	color: var(--theme-accent);
+}
+
+[data-theme='lcars'] .output p {
+	font-family: var(--font-mono);
+	font-size: 0.92rem;
+	line-height: 1.6;
+}
+
+.empty {
+	flex: 1;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	text-align: center;
+	padding: 3rem 1rem;
+	color: var(--text-muted);
+	font-size: 0.85rem;
+	letter-spacing: 0.04em;
 }
 
-[data-theme='lcars'] .lcars-dial-bg {
-	width: 100%;
-	height: 100%;
-	border: 15px solid var(--lcars-blue);
+.error-box {
+	background: color-mix(in srgb, var(--danger) 14%, transparent);
+	border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
+	color: var(--theme-text);
+	border-radius: var(--theme-radius);
+	padding: 0.85rem 1rem;
+	font-size: 0.85rem;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+}
+
+/* ============================================================
+   SPINNER
+   ============================================================ */
+.spinner {
+	width: 1.1rem;
+	height: 1.1rem;
 	border-radius: 50%;
+	border: 2px solid currentColor;
+	border-top-color: transparent;
+	animation: spin 0.7s linear infinite;
+	display: inline-block;
 }
 
-[data-theme='lcars'] .lcars-dial-indicator {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	width: 45%;
-	height: 6px;
-	background: var(--lcars-orange);
-	transform-origin: left center;
-	border-radius: 0 3px 3px 0;
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
 }
 
-[data-theme='lcars'] .lcars-dial-value {
-	position: absolute;
-	color: var(--lcars-gold);
-	font-weight: bold;
-	font-size: 1.2rem;
-}
-
+/* ============================================================
+   SCROLLBARS
+   ============================================================ */
 .themed-scrollbar {
 	scrollbar-width: thin;
-	scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+	scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
 .themed-scrollbar::-webkit-scrollbar {
-	width: 0.7rem;
-	height: 0.7rem;
+	width: 0.6rem;
+	height: 0.6rem;
 }
 
 .themed-scrollbar::-webkit-scrollbar-track {
-	background: var(--scrollbar-track);
-	border-radius: 9999px;
+	background: transparent;
 }
 
 .themed-scrollbar::-webkit-scrollbar-thumb {
 	background: var(--scrollbar-thumb);
-	border-radius: 9999px;
-	border: 2px solid var(--scrollbar-track);
+	border-radius: 999px;
+	border: 2px solid var(--theme-bg);
 }
 
 .themed-scrollbar::-webkit-scrollbar-thumb:hover {
 	background: var(--scrollbar-thumb-hover);
 }
 
-.output-scroll {
-	max-height: min(45vh, 24rem);
-	overscroll-behavior: contain;
-	-webkit-overflow-scrolling: touch;
-	padding-right: 0.35rem;
-	padding-bottom: 0.35rem;
+/* ============================================================
+   INFO PANEL (personality details)
+   ============================================================ */
+.info-panel {
+	position: absolute;
+	top: calc(100% + 0.5rem);
+	right: 0;
+	z-index: 40;
+	width: min(22rem, calc(100vw - 2rem));
+	max-height: 70vh;
+	overflow-y: auto;
+	border-radius: var(--theme-radius);
+	border: 1px solid var(--panel-border);
+	background: color-mix(in srgb, var(--theme-bg) 96%, transparent);
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
+	box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
 }
 
-@media (max-width: 1024px) {
-	[data-theme='lcars'] .lcars-header-pill {
-		font-size: 1.5rem;
-		padding-left: 24px;
-	}
+.info-panel__scrim {
+	position: fixed;
+	inset: 0;
+	z-index: 35;
+	background: rgba(0, 0, 0, 0.35);
+}
 
-	[data-theme='lcars'] .lcars-content-area {
-		padding: 24px;
+.info-persona {
+	width: 100%;
+	text-align: left;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	padding: 0.8rem 1rem;
+	background: none;
+	border: none;
+	border-bottom: 1px solid var(--panel-border);
+	color: var(--theme-text);
+	font-family: var(--font-display);
+	font-size: 0.78rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition: background 0.15s ease;
+}
+
+.info-persona:hover {
+	background: var(--panel-bg);
+}
+
+.info-persona__detail {
+	overflow: hidden;
+}
+
+.info-persona__detail p {
+	margin: 0;
+	padding: 0 1rem 1rem;
+	font-size: 0.82rem;
+	line-height: 1.6;
+	color: var(--text-muted);
+}
+
+.info-persona__detail em {
+	display: block;
+	margin-top: 0.5rem;
+	opacity: 0.6;
+	white-space: pre-wrap;
+}
+
+/* ============================================================
+   MOTION / SMALL SCREENS
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+	* {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
 	}
 }
 
-@media (max-width: 768px) {
-	[data-theme='lcars'] .lcars-frame {
-		grid-template-columns: 1fr;
-		grid-template-rows: auto auto 1fr auto;
-		gap: 10px;
-		padding-bottom: 10px;
+@media (max-width: 640px) {
+	.panel {
+		padding: 0.9rem;
 	}
 
-	[data-theme='lcars'] .lcars-header-pill {
-		grid-column: 1;
-		border-radius: 24px 0 0 24px;
-		min-height: 60px;
-		height: auto;
-		padding: 12px 0 12px 18px;
-		font-size: clamp(1rem, 4.7vw, 1.3rem);
-		letter-spacing: 0.04em;
+	.btn-primary {
+		width: 100%;
 	}
 
-	[data-theme='lcars'] .lcars-sidebar {
-		grid-column: 1;
-		grid-row: 2;
-		flex-direction: row;
-		align-items: flex-start;
-		gap: 10px;
-		padding-top: 0;
-		padding-bottom: 4px;
-		overflow-x: auto;
-		overflow-y: hidden;
-	}
-
-	[data-theme='lcars'] .lcars-pill {
-		width: auto;
-		min-width: 150px;
-		height: 40px;
-		border-radius: 20px;
-		padding-right: 14px;
-		flex: 0 0 auto;
-	}
-
-	[data-theme='lcars'] .lcars-pill-active {
-		width: auto;
-		box-shadow: 0 0 0 2px var(--lcars-orange);
-	}
-
-	[data-theme='lcars'] .lcars-controls {
-		margin-top: 0;
-		display: grid;
-		grid-auto-flow: column;
-		align-items: center;
-		gap: 10px;
-		padding-bottom: 0;
-	}
-
-	[data-theme='lcars'] .lcars-content-area {
-		grid-column: 1;
-		grid-row: 3;
-		border-top-width: 12px;
-		border-left-width: 12px;
-		border-radius: 36px 0 0 0;
-		padding: 16px;
-		min-height: 0;
-	}
-
-	[data-theme='lcars'] .lcars-input-pill {
-		border-radius: 20px;
-		padding: 14px;
-	}
-
-	[data-theme='lcars'] .lcars-dial-container {
-		width: 96px;
-		height: 96px;
-		margin: 0 auto;
-	}
-
-	[data-theme='lcars'] .lcars-dial-bg {
-		border-width: 10px;
-	}
-
-	[data-theme='lcars'] .lcars-dial-value {
-		font-size: 0.9rem;
-	}
-
-	[data-theme='lcars'] .lcars-footer-pill {
-		grid-column: 1;
-		grid-row: 4;
-		height: 24px;
-		border-radius: 0 0 0 24px;
+	.app-brand {
+		font-size: 1.1rem;
 	}
 }
