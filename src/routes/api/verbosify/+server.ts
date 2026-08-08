@@ -78,7 +78,15 @@ function buildPrompt(
 						: 'extremely verbose — go entirely over the top with elaboration, extended passages, and extravagant flourishes';
 
 	const poeticInstruction = smartPoeticMode
-		? '- Smart Poetic Mode: Carefully determine whether the input is genuinely structured as verse or poetry — meaning it has multiple lines with an intentional rhyme scheme, metre, or stanza structure. ONLY if the input is clearly poetry should your output also be in verse. If the input is plain prose, or merely contains words that happen to rhyme, your output MUST be plain prose too.'
+		? `- Smart Poetic Mode — FORMAT DETECTION AND PRESERVATION:
+Analyze the input to determine its natural format. Detect whether it is:
+  • Plain prose (normal sentences/paragraphs) → output as prose
+  • A poem (stanzas, line breaks, metre, rhyme, free verse) → output as a poem in the same structural style (same stanza lengths, similar line count, same rhyme scheme if present)
+  • A song or lyric (verses + chorus structure, repeated sections, refrain) → output as a song: preserve the verse/chorus/bridge structure, keep the refrain/chorus mostly intact (verbosify only the verses), maintain line breaks and stanzas
+  • A limerick, haiku, sonnet, or other fixed form → output in that same fixed form, respecting syllable count or structural rules where possible
+  • Lyrics with [bracket] stage directions → preserve those bracketed directions as-is
+
+If the input is plain prose, keep output as prose — do NOT impose verse. If the input IS verse, your output MUST remain verse in the same format. Never mix: if it starts as prose, it stays prose; if it starts as verse, it stays verse.`
 		: '- Output plain prose only. Do NOT introduce verse, rhyme, or poetic structure regardless of the input.';
 
 	return `You are ${personality.name}. Your voice: ${personality.style}
@@ -87,7 +95,9 @@ Transform the text below to be ${verbosityLabel} (verbosity level ${verbosity}/1
 
 Rules:
 - Output ONLY the transformed text. No preamble, no labels, no explanation, no quotes around the output.
+- Maintain the original formatting: line breaks, stanza spacing, verse/chorus labels, [bracketed stage directions]. The structure of the text is sacred.
 - Preserve the original meaning faithfully.
+- Preserve the input's structural format: if it has line breaks, stanzas, or section breaks, keep them. If it has labeled sections (e.g. "Verse 1:", "Chorus:"), keep those labels. Structure is part of the meaning.
 - The verbosity level is ${verbosity}/100 — calibrate the richness and ornamentation accordingly.
 - Proportionality: scale the output length to match the input length. A single sentence in should yield at most a short paragraph out, even at maximum verbosity. A greeting should become a few eloquent sentences, not an essay. Verbosity controls density of expression, not unlimited expansion.
 - Conversation format: if the input uses "Name: line" format (e.g. "Ramesh: how are you?"), preserve each name prefix exactly as-is and only verbosify the speech after the colon. If the input is prose narrative (e.g. "he said, 'hello', and left"), verbosify the entire thing as normal.
