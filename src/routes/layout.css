@@ -43,32 +43,37 @@
 :root[data-theme='lcars'] {
 	--theme-bg: #000000;
 	--theme-text: #f2f5ff;
-	--theme-accent: #ff9f2e;
+	--theme-accent: #ff9900;
 	--theme-secondary: #101828;
-	--theme-radius: 2rem;
+	--theme-radius: 1.5rem;
 
-	--panel-bg: rgba(16, 24, 40, 0.45);
-	--panel-border: rgba(85, 102, 255, 0.5);
+	--panel-bg: #000000;
+	--panel-border: #333855;
 
-	--input-bg: rgba(0, 0, 0, 0.55);
-	--chip-bg: rgba(0, 0, 0, 0.6);
+	--input-bg: #000000;
+	--chip-bg: #0a0f1e;
 
-	--text-muted: rgba(226, 232, 255, 0.5);
-	--danger: #ff5a5a;
+	--text-muted: #99a3cc;
+	--danger: #cc4444;
 
+	/* Okuda palette — the canonical LCARS colors */
+	--lcars-tan: #f9d26d;
 	--lcars-orange: #ff9900;
 	--lcars-gold: #ffcc00;
-	--lcars-blue: #5566ff;
 	--lcars-peach: #ffcc99;
+	--lcars-blue: #5566ff;
+	--lcars-lavender: #cc99ff;
 	--lcars-violet: #cb9cff;
 	--lcars-red: #cc4444;
+	--lcars-teal: #6699cc;
 
 	--glow-alpha: 0.35;
 	--font-display: var(--font-mono);
+	--bar-width: 28px;
 
-	--scrollbar-track: #0b0f1e;
+	--scrollbar-track: #050810;
 	--scrollbar-thumb: #5566ff;
-	--scrollbar-thumb-hover: #ff9f2e;
+	--scrollbar-thumb-hover: #ff9900;
 }
 
 /* ============================================================
@@ -111,27 +116,32 @@ body {
 	flex-direction: column;
 }
 
-/* Lcars wakes the LCARS "frame" — full-bleed corner bars. */
+/* LCARS frame — authentic Okudagram structure:
+   vertical sidebar bar (left edge) + horizontal header bar (top edge)
+   with rounded "elbow" at their junction. */
 [data-theme='lcars'] .app-root::before,
 [data-theme='lcars'] .app-root::after {
 	content: '';
 	position: fixed;
 	z-index: 5;
-	background: var(--lcars-orange);
 }
 
+/* Vertical sidebar bar — blue, left edge */
 [data-theme='lcars'] .app-root::before {
 	top: 0;
 	left: 0;
-	height: 6px;
-	width: 100%;
+	height: 100%;
+	width: var(--bar-width);
+	background: var(--lcars-blue);
 }
 
+/* Horizontal header bar — orange, top edge */
 [data-theme='lcars'] .app-root::after {
-	bottom: 0;
-	right: 0;
-	height: 6px;
+	top: 0;
+	left: 0;
+	height: var(--bar-width);
 	width: 100%;
+	background: var(--lcars-orange);
 }
 
 .main-content {
@@ -142,6 +152,11 @@ body {
 	max-width: 1100px;
 	margin: 0 auto;
 	padding: 1rem 1rem 3rem;
+}
+
+[data-theme='lcars'] .main-content {
+	/* Push content inside the LCARS frame */
+	padding-left: calc(var(--bar-width) + 1rem);
 }
 
 @media (min-width: 768px) {
@@ -189,15 +204,37 @@ body {
 	white-space: nowrap;
 }
 
+[data-theme='lcars'] .app-brand {
+	color: var(--lcars-gold);
+	letter-spacing: 0.15em;
+	font-size: 1.1rem;
+}
+
 .header-actions {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
 }
 
-/* Lcars header — pill-shaped blocks on the right rail. */
+/* Lcars header — thick colored bar with elbow connector to sidebar. */
 [data-theme='lcars'] .app-header {
-	border-bottom: 2px solid var(--lcars-blue);
+	background: #000;
+	border-bottom: none;
+	/* Inset below the orange header bar */
+	padding-top: calc(var(--bar-width) + 0.5rem);
+	position: relative;
+}
+
+[data-theme='lcars'] .app-header::before {
+	content: '';
+	position: absolute;
+	top: var(--bar-width);
+	left: var(--bar-width);
+	width: var(--bar-width);
+	height: calc(100% - var(--bar-width));
+	background: var(--lcars-blue);
+	/* Elbow: rounded bottom-right inner corner where blue meets orange */
+	border-bottom-right-radius: 16px;
 }
 
 /* ============================================================
@@ -286,6 +323,99 @@ body {
 }
 
 /* ============================================================
+   LCARS AUTHENTIC STYLING
+   Okudagram frame elements, panels, controls
+   ============================================================ */
+
+/* Panels — transparent background, thick colored borders */
+[data-theme='lcars'] .panel {
+	background: transparent;
+	border: none;
+	border-radius: 0;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+}
+
+/* Corner bracket trim marks on workspace panels */
+[data-theme='lcars'] .workspace .panel {
+	position: relative;
+	padding: 1.5rem;
+}
+
+[data-theme='lcars'] .workspace .panel::before,
+[data-theme='lcars'] .workspace .panel::after {
+	content: '';
+	position: absolute;
+	width: 24px;
+	height: 24px;
+	pointer-events: none;
+}
+
+[data-theme='lcars'] .workspace .panel::before {
+	top: 0;
+	left: 0;
+	border-top: 3px solid var(--lcars-blue);
+	border-left: 3px solid var(--lcars-blue);
+	border-top-left-radius: 10px;
+}
+
+[data-theme='lcars'] .workspace .panel::after {
+	bottom: 0;
+	right: 0;
+	border-bottom: 3px solid var(--lcars-orange);
+	border-right: 3px solid var(--lcars-orange);
+	border-bottom-right-radius: 10px;
+}
+
+/* LCARS slider — thick bar with glowing thumb */
+[data-theme='lcars'] .slider {
+	height: 10px;
+	border-radius: 0;
+	background: linear-gradient(
+		to right,
+		var(--lcars-gold) var(--slider-fill, 50%),
+		#1a1a2e var(--slider-fill, 50%)
+	);
+}
+
+[data-theme='lcars'] .slider::-webkit-slider-thumb {
+	width: 18px;
+	height: 32px;
+	border-radius: 0;
+	background: var(--lcars-gold);
+	border: 2px solid #000;
+	box-shadow: 0 0 10px var(--lcars-gold);
+}
+
+[data-theme='lcars'] .slider::-moz-range-thumb {
+	width: 18px;
+	height: 32px;
+	border-radius: 0;
+	background: var(--lcars-gold);
+	border: 2px solid #000;
+	box-shadow: 0 0 10px var(--lcars-gold);
+}
+
+/* LCARS toggle switch — rectangular, colored */
+[data-theme='lcars'] .switch__track {
+	border-radius: 0;
+	background: #1a1a2e;
+}
+
+[data-theme='lcars'] .switch__track::before {
+	border-radius: 0;
+	background: var(--text-muted);
+}
+
+[data-theme='lcars'] .switch input:checked + .switch__track {
+	background: var(--lcars-gold);
+}
+
+[data-theme='lcars'] .switch input:checked + .switch__track::before {
+	background: #000;
+}
+
+/* ============================================================
    PAGE LAYOUT
    Controls rail + workspace. Collapses to one column mobile.
    ============================================================ */
@@ -315,6 +445,33 @@ body {
 	flex-direction: column;
 	gap: 1.25rem;
 	min-width: 0;
+}
+
+/* LCARS sidebar — transparent, pill buttons stack */
+[data-theme='lcars'] .controls-rail .panel {
+	padding: 0;
+	background: transparent;
+}
+
+[data-theme='lcars'] .controls-rail .panel__title {
+	color: var(--lcars-tan);
+	font-size: 0.65rem;
+	letter-spacing: 0.2em;
+	margin-bottom: 0.5rem;
+	padding-left: 0.25rem;
+}
+
+[data-theme='lcars'] .field {
+	margin-top: 1rem;
+}
+
+[data-theme='lcars'] .field__label {
+	color: var(--lcars-tan);
+}
+
+[data-theme='lcars'] .field__value {
+	color: var(--lcars-gold);
+	font-family: var(--font-mono);
 }
 
 /* ============================================================
@@ -380,22 +537,49 @@ body {
 	color: var(--accent-color);
 }
 
-[data-theme='lcars'] .personality-chip {
-	border-radius: 22px;
-	border: 2px solid transparent;
-	border-left-color: var(--accent-color);
-	background: var(--chip-bg);
-	font-family: var(--font-mono);
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
-	padding: 0.55rem 0.9rem;
+/* LCARS: Authentic pill-shaped sidebar buttons — one end rounded, full width */
+[data-theme='lcars'] .personality-list {
+	flex-direction: column;
+	gap: 0;
 }
 
+[data-theme='lcars'] .personality-chip {
+	width: 100%;
+	border-radius: 0;
+	/* Square left, fully rounded right — the LCARS pill */
+	border: none;
+	border-radius: 0 22px 22px 0;
+	background: var(--lcars-blue);
+	color: #000;
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	padding: 0.65rem 1.2rem 0.65rem 0.9rem;
+	justify-content: flex-start;
+	transition: all 0.15s ease;
+}
+
+[data-theme='lcars'] .personality-chip:hover {
+	transform: none;
+	filter: brightness(1.1);
+}
+
+[data-theme='lcars'] .personality-chip svg {
+	width: 1rem;
+	height: 1rem;
+	color: #000;
+}
+
+/* Active pill extends wider — the signature LCARS "selected" effect */
 [data-theme='lcars'] .personality-chip--active {
-	border-color: var(--accent-color);
 	background: var(--accent-color);
 	color: #000;
-	box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.6), 0 0 0 0;
+	width: 115%;
+	margin-left: -15%;
+	font-size: 0.82rem;
+	box-shadow: 8px 0 0 rgba(0, 0, 0, 0.5);
 }
 
 [data-theme='lcars'] .personality-chip--active svg {
@@ -545,6 +729,17 @@ body {
 	color: var(--text-muted);
 }
 
+/* LCARS switch row — tan label, gold text */
+[data-theme='lcars'] .switch-row .panel__title {
+	color: var(--lcars-tan);
+}
+
+[data-theme='lcars'] .switch-hint {
+	color: var(--text-muted);
+	font-family: var(--font-mono);
+	font-size: 0.65rem;
+}
+
 /* ============================================================
    INPUT
    ============================================================ */
@@ -582,6 +777,26 @@ body {
 
 .textarea:disabled {
 	opacity: 0.6;
+}
+
+/* LCARS textarea — pill-shaped, blue border, monospace */
+[data-theme='lcars'] .textarea {
+	border: 3px solid var(--lcars-blue);
+	border-radius: 30px;
+	background: #000;
+	font-family: var(--font-mono);
+	font-size: 0.9rem;
+	color: var(--lcars-peach);
+	padding: 1rem 1.25rem;
+}
+
+[data-theme='lcars'] .textarea:focus {
+	border-color: var(--lcars-gold);
+	box-shadow: 0 0 20px rgba(255, 204, 0, 0.2);
+}
+
+[data-theme='lcars'] .textarea::placeholder {
+	color: var(--text-muted);
 }
 
 .input-foot {
@@ -669,6 +884,19 @@ body {
 	line-height: 1.6;
 }
 
+/* LCARS slider labels */
+[data-theme='lcars'] .slider-labels {
+	color: var(--lcars-tan);
+}
+
+/* LCARS value badge */
+[data-theme='lcars'] .field__value {
+	background: rgba(255, 204, 0, 0.15);
+	border: 1px solid rgba(255, 204, 0, 0.3);
+	border-radius: 0;
+	padding: 0.1rem 0.5rem;
+}
+
 .empty {
 	flex: 1;
 	display: flex;
@@ -691,6 +919,45 @@ body {
 	display: flex;
 	align-items: center;
 	gap: 0.6rem;
+}
+
+/* LCARS error — red border, no radius */
+[data-theme='lcars'] .error-box {
+	border: 2px solid var(--lcars-red);
+	border-radius: 0;
+	background: rgba(204, 68, 68, 0.12);
+	font-family: var(--font-mono);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+/* LCARS empty state */
+[data-theme='lcars'] .empty {
+	border: 2px solid #1a1a2e;
+	border-radius: 0;
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: var(--text-muted);
+}
+
+/* LCARS output card head — colored border bottom */
+[data-theme='lcars'] .output-card__head {
+	border-bottom: 2px solid var(--lcars-blue);
+	padding-bottom: 0.75rem;
+}
+
+[data-theme='lcars'] .output-card__meta {
+	color: var(--lcars-tan);
+	font-family: var(--font-mono);
+	font-size: 0.65rem;
+	letter-spacing: 0.15em;
+}
+
+[data-theme='lcars'] .personality-dot {
+	background: var(--lcars-gold);
+	box-shadow: 0 0 8px var(--lcars-gold);
 }
 
 /* ============================================================
@@ -790,6 +1057,33 @@ body {
 	background: var(--panel-bg);
 }
 
+/* LCARS info panel — black bg, blue border, monospace */
+[data-theme='lcars'] .info-panel {
+	background: #000;
+	border: 2px solid var(--lcars-blue);
+	border-radius: 0;
+	box-shadow: 0 0 30px rgba(85, 102, 255, 0.2);
+}
+
+[data-theme='lcars'] .info-persona {
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	letter-spacing: 0.15em;
+	border-bottom-color: #1a1a2e;
+}
+
+[data-theme='lcars'] .info-persona__detail p {
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	line-height: 1.5;
+}
+
+[data-theme='lcars'] .info-persona__detail em {
+	font-family: var(--font-mono);
+	font-size: 0.7rem;
+	color: var(--lcars-peach);
+}
+
 .info-persona__detail {
 	overflow: hidden;
 }
@@ -831,5 +1125,40 @@ body {
 
 	.app-brand {
 		font-size: 1.1rem;
+	}
+
+	/* LCARS mobile: reduce bar width, adjust sidebar pills */
+	[data-theme='lcars'] .app-root::before {
+		width: 18px;
+	}
+
+	[data-theme='lcars'] .app-root::after {
+		height: 18px;
+	}
+
+	[data-theme='lcars'] .app-header {
+		padding-top: calc(18px + 0.5rem);
+	}
+
+	[data-theme='lcars'] .app-header::before {
+		top: 18px;
+		left: 18px;
+		width: 18px;
+		height: calc(100% - 18px);
+	}
+
+	[data-theme='lcars'] .main-content {
+		padding-left: calc(18px + 0.75rem);
+	}
+
+	[data-theme='lcars'] .personality-chip {
+		font-size: 0.7rem;
+		padding: 0.55rem 1rem 0.55rem 0.75rem;
+	}
+
+	[data-theme='lcars'] .personality-chip--active {
+		width: 108%;
+		margin-left: -8%;
+		font-size: 0.78rem;
 	}
 }

@@ -125,7 +125,7 @@
 			<div class="switch-row">
 				<div>
 					<p class="panel__title" style="margin-bottom:0.25rem">Smart poetic</p>
-					<p class="switch-hint">Preserve rhythm &amp; rhyme</p>
+					<p class="switch-hint">Preserve poems, songs &amp; verse</p>
 				</div>
 				<label class="switch">
 					<input type="checkbox" bind:checked={smartPoeticMode} />
