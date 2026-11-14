@@ -41,6 +41,8 @@
 	},
 	"dependencies": {
 		"@google/generative-ai": "^0.24.1",
-		"@lucide/svelte": "^1.16.0"
+		"@langchain/core": "^1.4.1",
+		"@lucide/svelte": "^1.16.0",
+		"@zespan/sdk": "^1.5.1"
 	}
 }

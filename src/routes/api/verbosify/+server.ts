@@ -1,7 +1,40 @@
+import { createRequire } from 'module';
+if (typeof globalThis.require === 'undefined') {
+	globalThis.require = createRequire(import.meta.url);
+}
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { init as initZespan, wrapGoogle, getZespanClient } from '@zespan/sdk';
 import { env } from '$env/dynamic/private';
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+
+let isZespanInitialized = false;
+function setupZespan(apiKey?: string, projectId?: string, environment?: string) {
+	if (!isZespanInitialized && apiKey) {
+		try {
+			initZespan({
+				apiKey,
+				projectId: projectId || '31e4d3e9-2d05-4a74-ad52-c480aa61b7d7',
+				environment: environment || 'production'
+			});
+			isZespanInitialized = true;
+		} catch (e) {
+			console.error('[/api/verbosify] Failed to initialize Zespan:', e);
+		}
+	}
+}
+
+async function flushZespan() {
+	try {
+		const client = getZespanClient();
+		if (client?.batch?.flush) {
+			await client.batch.flush();
+		}
+	} catch {
+		// Non-blocking: fail quietly if flush fails
+	}
+}
 
 const MAX_RETRIES = 1;
 const DEFAULT_RETRY_AFTER_SECONDS = 60;
@@ -128,7 +161,11 @@ export const POST: RequestHandler = async ({ request }) => {
 			return error(500, 'GEMINI_API_KEY is not set');
 		}
 
-		const genAI = new GoogleGenerativeAI(apiKey);
+		let genAI = new GoogleGenerativeAI(apiKey);
+		if (env.ZESPAN_API_KEY) {
+			setupZespan(env.ZESPAN_API_KEY, env.ZESPAN_PROJECT_ID, env.ZESPAN_ENVIRONMENT);
+			genAI = wrapGoogle(genAI);
+		}
 		const model = genAI.getGenerativeModel({
 			model: env.GEMINI_MODEL ?? 'models/gemini-flash-lite-latest',
 			generationConfig: {
@@ -161,8 +198,16 @@ export const POST: RequestHandler = async ({ request }) => {
 			}
 		})();
 
+		if (env.ZESPAN_API_KEY) {
+			await flushZespan();
+		}
+
 		return json({ output: result.response.text() });
 	} catch (e) {
+		if (env.ZESPAN_API_KEY) {
+			await flushZespan();
+		}
+
 		const message = e instanceof Error ? e.message : 'Gemini API error';
 		console.error('[/api/verbosify]', message);
 
